@@ -1,0 +1,556 @@
+---
+output:
+  html_document:
+    fig_width: 14
+    toc: yes
+  pdf_document:
+    toc: yes
+---
+PokemonGuide by __JUHYUNG__
+========================================================
+```{r global_options, include=FALSE}
+knitr::opts_chunk$set(echo=FALSE, warning=FALSE, message=FALSE)
+```
+```{r echo=FALSE, message=FALSE, warning=FALSE, packages}
+# Load all of the packages that you end up using
+# in your analysis in this code chunk.
+
+# Notice that the parameter "echo" was set to FALSE for this code chunk.
+# This prevents the code from displaying in the knitted HTML output.
+# You should set echo=FALSE for all code chunks in your file.
+knitr::opts_chunk$set(error = TRUE)
+library(dplyr)
+library(ggplot2)
+library(gridExtra)
+library(reshape2)
+library(memisc)
+library(RColorBrewer)
+library(knitr)
+```
+
+```{r Load_the_Data}
+# Load the Data
+setwd('C:/Users/JuHyung Son/Desktop/R')
+poke<-read.csv('pokemon.csv')
+poke$X. <- NULL
+```
+variable 'X' is just numbering on the data.
+But R already shows the row number so we don't need this 
+variable.
+```{r}
+poke$Generation<-factor(poke$Generation)
+poke$Type.2[38]<- ''
+```
+In poke data, Type.2[38] is '273'. This is wrong data, since Type is consisted of 'Fire', 'Water' and so on, '273'(poke$Type.2[38]) is not a type.
+```{r}
+poke <- melt(poke, id.vars = 
+               c('Name','Total','HP','Attack','Defense',
+                 'Sp..Atk','Sp..Def','Speed',
+                 'Generation','Legendary'),
+             variable.name = 'Type',
+             value.name = 'Type_value')
+```
+
+# About the data.
+
+```{r}
+str(poke)
+```
+
+This is pokemon dataset.
+The pokemons from generation 1 to 6.
+It contains the pokemon's score, legendary, type, generation.
+This data is interesting to me, because i was a pokemon trainer with 'gameboy' when i was a child. This makes me think back to my childhood.
+
+# Univariate Plots Section
+
+```{r Univariate_Plots}
+ggplot(data=subset(poke,Type=='Type.1'),
+       aes(x=Type_value))+
+  geom_bar(stat='count')
+```
+
+I need to count the number of pokemons in each Type.
+It's not uniformly designed.
+The least is Flying type and the most is water type.
+
+```{r}
+ggplot(data=subset(poke, Type == 'Type.1'),
+       aes(x=Legendary))+
+  geom_bar(stat='count')
+
+with(subset(poke,Type=='Type.1'),summary(Legendary))
+summary(poke$Legendary)
+```
+
+I need to count how many legend pokemons are there.
+Naturally legend pokemon is much less than normal pokemon.
+There are about 10 times more normal pokemons than legend pokemon.
+
+```{r}
+ggplot(data=subset(poke,Type == 'Type.1'),
+       aes(x=Generation))+
+  geom_bar(stat='count')
+summary(poke$Generation)
+```
+
+This plot shows how many pokemons are in each generations.
+Interestingly, in odds number of generation,
+about 50 pokemons were more made than even number of generation.
+
+```{r}
+ggplot(data=subset(poke,Type=='Type.1'),
+       aes(x=HP))+
+  geom_histogram(binwidth = 30)
+summary(poke$HP)
+```
+
+without outlier(HP=255). I observed it's approximately normal.
+
+```{r}
+ggplot(data=subset(poke,Type=='Type.1'),
+       aes(x=Attack))+
+  geom_histogram(binwidth = 10)
+summary(poke$Attack)
+```
+
+```{r}
+ggplot(data=subset(poke,Type=='Type.1'),
+       aes(x=Defense))+
+  scale_x_log10()+
+  geom_histogram(binwidth = 0.09)
+summary(poke$Defense)
+```
+
+This plot is log-transformed and this is more close to normal.
+now it's easier to work with.
+
+```{r}
+ggplot(data=subset(poke,Type=='Type.1'),
+       aes(x=Sp..Atk))+
+  scale_x_log10()+
+  geom_histogram(binwidth = 0.09)
+summary(poke$Sp..Atk)
+```
+
+this was more skewed than Defense plot.
+and still skewed a little but much better.
+
+```{r}
+ggplot(data=subset(poke,Type=='Type.1'),
+       aes(x=Sp..Def))+
+  scale_x_log10()+
+  geom_histogram(binwidth = 0.09)
+summary(poke$Sp..Def)
+```
+
+This is was a little ambiguous plot.
+After log-transformed it's clear that it seems normal.
+
+```{r}
+ggplot(data=subset(poke,Type=='Type.1'),
+       aes(x=Speed))+
+  geom_histogram(binwidth = 5)
+summary(poke$Speed)
+```
+
+This is pretty normal.
+
+```{r}
+ggplot(data=subset(poke,Type == 'Type.1'),
+       aes(x=Total))+
+  geom_histogram(binwidth = 80)
+summary(poke$Total)
+```
+
+It seems histogram of some variables look normal and others look normal if log-transformed.
+
+# Univariate Analysis
+
+### What is the structure of your dataset?
+
+pokemon dataset has 800 objects with 12 variables.
+Type.1 and Type.2 are features of that pokemon.
+it can be pokemon's biological feature such as Bug, Dragon and also nature of it`s power such as Posion, Fighting.
+Numeric values Total~Speed is each pokemon's score.
+Generation is when the pokemon made, there were pokemon animation season 1 to season 6.
+Legendary show whether the pokemon is lengend pokemon or not.
+
+* Most of pokemons have 1 type.
+* There are few of legendary pokemon.
+* In odd number of generation, 1, 3, 5, there were more pokemons than even number of generation.
+
+### What is/are the main feature(s) of interest in your dataset?
+
+The main feature of this dataset is Total.Total is sum of HP, Attack, Defense, Sp..Atk, Sp..Def, Speed. Total decide how powerful the pokemon is.
+
+### What other features in the dataset do you think will help support your investigation into your feature(s) of interest?
+
+Legendary and type.
+Usually legend pokemons are powerful. and specific type of pokemon also powerful.
+
+### Did you create any new variables from existing variables in the dataset?
+
+No I just melt the data.
+
+### Of the features you investigated, were there any unusual distributions? Did you perform any operations on the data to tidy, adjust, or change the form of the data? If so, why did you do this?
+
+there was no unusual distribution.
+I made dataset poke2 that combine type.1 and type.2.
+Because Type.1 and Type.2 is same value but is seperated.
+So i melt it to use both of them.
+
+
+# Bivariate Plots Section
+
+```{r Bivariate_Plots}
+ggplot(data=subset(poke,Type=='Type.1'),
+       aes(x=Type_value))+
+  geom_bar(stat='count',position ='dodge' ,aes(fill=Legendary))
+```
+
+We saw the number of pokemons by legend and type above. But the one plot with these three is better.
+This shows there is no legend pokemon in bug, fighting and poison type and dragon, pshychic type has more legend pokemon than others
+
+```{r}
+ggplot(data = subset(poke,Type == 'Type.1'),
+       aes(x=Generation))+
+  geom_bar(stat='count',position = 'dodge',aes(fill=Legendary))
+```
+
+Also I'm wondering which generation has more legend pokemons.
+Plot shows 3, 5 generation has about twice more legend pokemons than others.
+
+```{r}
+ggplot(data=poke,
+       aes(x=Type_value, y= Total))+
+  ylab('Total score')+
+  geom_boxplot()
+```
+
+Now i'm wondering distribution of Total in each type. This helps to see which type of pokemon is strong.
+Dragon type is strongest, maybe because just they are dragon.
+Others show similar box plots.
+
+```{r}
+ggplot(data=poke,
+       aes(x=poke$HP,y=Total))+
+  geom_point(alpha=1/10)+
+  ylab('Total score')+
+  geom_smooth(method='lm')+
+  scale_x_continuous(limits = c(0,150))+
+  scale_y_continuous(limits = c(200,800))
+
+cor.test(poke$HP,poke$Total)
+```
+
+I guess the pokemon with high HP normally has high Total. let's check it.
+I can see my guess is pretty good in this plot. I can check it with linear method line.
+
+```{r}
+ggplot(data=poke,
+       aes(x=poke$Attack,y=Total))+
+  geom_point(alpha=1/10)+
+  ylab('Total score')+
+  geom_smooth(method='lm')+
+  scale_x_continuous(limits = c(0,200))+
+  scale_y_continuous(limits = c(200,800))
+
+cor.test(poke$Attack,poke$Total)
+```
+
+Also other variables may have linearity with Total.
+Attack shows good slope with Total.
+
+```{r}
+ggplot(data=poke,
+       aes(x=poke$Defense,y=Total))+
+  geom_point(alpha=1/10)+
+  geom_smooth(method='lm')+
+  ylab('Total score')+
+  scale_x_continuous(limits = c(25,150))+
+  scale_y_continuous(limits = c(200,800))
+cor.test(poke$Defense,poke$Total)
+```
+
+I can check correlation is 0.61, also plot looks it has linaer regression.
+
+```{r}
+ggplot(data=poke,
+       aes(x=poke$Sp..Atk,y=Total))+
+  geom_point(alpha=1/10)+
+  geom_smooth(method='lm')+
+  ylab('Total score')+
+  scale_x_continuous(limits = c(0,150))+
+  scale_y_continuous(limits = c(200,800))
+
+cor.test(poke$Sp..Atk,poke$Total)
+```
+
+With correlation 0.74. It's more linear than Defense.
+This means Sp..Atk is more important to guess pokemon's Total.
+
+```{r}
+ggplot(data=poke,
+       aes(x=poke$Sp..Def,y=Total))+
+  geom_point(alpha=1/10)+
+  geom_smooth(method='lm')+
+  ylab('Total score')+
+  scale_x_continuous(limits = c(0,150))+
+  scale_y_continuous(limits = c(200,800))
+
+cor.test(poke$Sp..Def,poke$Total)
+```
+
+With correlation 0.71. pretty high correlation.
+Sp..Atk, Sp..Def is important variable to pokemon.
+
+```{r}
+ggplot(data=poke,
+       aes(x=poke$Speed,y=Total))+
+  geom_point(alpha=1/10)+
+  geom_smooth(method='lm')+
+  ylab('Total score')+
+  scale_x_continuous(limits = c(0,150))+
+  scale_y_continuous(limits = c(200,800))
+
+cor.test(poke$Speed,poke$Total)
+```
+
+In this plot.
+The slope of the line is smaller than others, which means less correlation.
+And I can check it by cor.test, correlation = 0.5793
+
+```{r}
+ggplot(data=poke,
+       aes(x=Legendary, y= Total))+
+  ylab('Total score')+
+  geom_boxplot()
+```
+
+How legend pokemon stonger than others?
+this boxplot show legends are absolutely stronger than normal.
+But some normal pokemons are strong as legends.
+
+# Bivariate Analysis
+
+### Talk about some of the relationships you observed in this part of the investigation. How did the feature(s) of interest vary with other features in the dataset?
+
+First There are much more none type of pokemons than other types, but each type of pokemons have similar range of Total except Dragon, they are powerful.
+
+Second, The compositions of Total has linear regression with Total.
+
+### Did you observe any interesting relationships between the other features (not the main feature(s) of interest)?
+
+Legendary pokemons are spreaded in each Generation and Type almost similarly.
+
+### What was the strongest relationship you found?
+
+It is obvious that Lgendary pokemons have high Total score.
+
+
+# Multivariate Plots Section
+
+```{r Multivariate_Plots}
+ggplot(data=poke,
+       aes(x=Type_value,y=Total))+
+  geom_boxplot(aes(fill=Legendary))+
+  xlab('Type')+
+  ylab('Total score')+
+  ggtitle('Total score of Lengend and None Legend pokemon by type')
+```
+
+I'm wondering the difference between normal and legend in each type of pokemon. 
+The gap between them is almost same except drangon and normal.
+Dragon is highly strong on average so the gap is small.
+Normal type pokemons with none legend have a little small Total than others, so the gap is big.
+
+```{r}
+ggplot(data=poke,
+       aes(x=Generation, y=Total))+
+  ylab('Total score')+
+  geom_boxplot(aes(fill=Legendary))
+```
+
+This is Generation vs Total with legendary.
+I observed 1st generation legend pokemon is stronges than all others.
+I observed the outlier in 1st generation countinously that total is less than 200.
+
+```{r}
+filter(subset(poke,Type == 'Type.1' & Total< 100))
+```
+
+it's Nidoran. Don't choose it when you play pokemon game.
+
+```{r}
+pokelm<-lm(Total ~ HP + Attack +
+             Defense + Sp..Atk +
+             Sp..Def + Speed + Generation +
+             Legendary + Type_value,
+           data = poke)
+summary(pokelm)
+```
+
+from the regression model, i got R-squared: 0.99, which means 99% of Total is due to those variables. it's pretty high R-squared because i put all variables. But it doesnt mean it always imply causation.
+Also HP~Speed has low Std.Error and P-value less than 0.001 which means good to estimate Total.
+P-value of Generation 3 and 5 is less than 0.05, so it`s a little bit help to estimate Total with esimated coefficient bigger than 0, Total with generation 3, 5 may be higher.
+P-value of Posion type is less than 0.05 and it's Estimated coefficient is less than 0 that mean Posion type may have less Total.
+
+```{r}
+pokelm.res = resid(pokelm)
+plot(subset(poke,Type='Type.1')$Total, pokelm.res)
+```
+
+This is residual plot of regression.
+I observed the residual is almost 0 except 2 outliers.
+It's pretty good plot excepting those 2 outliers.
+And I know those 2 outliers is Nidorans.
+
+```{r}
+ggplot(data=poke, aes(x=Attack, y=Defense))+
+  geom_point(aes(color = Total), size = 5)+
+  ylim(0,quantile(poke$Defense,0.95))+
+  xlim(0,quantile(poke$Attack,0.95))+
+  geom_smooth(method='lm') +
+  scale_color_gradient(low = 2, high = 5)+
+  xlab('Attack') +
+  ylab('Defense') +
+  ggtitle('Attack vs Defense vs Total')
+```
+
+I'm wondering that the pokemon with high attack and defense may have high total too.
+This plot shows that by color and smooth linear method line.
+
+```{r}
+pokebytype <- poke %>%
+  group_by(Type_value, Generation) %>%
+  summarise(total_mean = mean (Total))
+
+ggplot(data=pokebytype,aes(x=Type_value,y=total_mean))+
+  geom_bar(position = 'dodge', stat='identity', aes(fill = Generation))+
+  coord_cartesian(ylim = c(0,700))+
+  scale_fill_brewer(type='seq', palette =8 ) +
+  xlab('Generation in each Type')+
+  ylab('Mean of Total score')+
+  ggtitle('Mean of Total score in each type in each generation')
+```
+
+To help understanding I add one more plot.
+
+```{r}
+ggplot(data=pokebytype,aes(x=Generation,y=Type_value))+
+  geom_tile(aes(fill = total_mean))+
+  scale_fill_gradient(low = "#100B99", high = "#00B111") +
+  xlab('Generation')+
+  ylab('Type')+
+  ggtitle('Heat map of Generation VS Type VS Total_mean')
+```
+
+It shows how mean of total score is differ in each generation.
+we can see many dragons are in generation 2,3,4,5.
+and in generation 6 there are few Bug type.
+
+# Multivariate Analysis
+
+### Talk about some of the relationships you observed in this part of the investigation. Were there features that strengthened each other in terms of looking at your feature(s) of interest?
+
+As we observed in the bivariate plot, dragon is strongest type in pokemon. The upper quantile of non-legendary dragon type pokemon Total score is around the lower quantile of legendary other-type pokemon Total score. But in legendary pokemon, normal type legendary pokemon has highest score except outliers.
+
+### Were there any interesting or surprising interactions between features?
+
+Also non-legendary pokemons have similar Total score but legendary pokemon in 1st generation has much higher Total score than other generation. Maybe it`s kind of ancient porkemon. Usually ancient things are powerful in movies or animations.
+
+It's somewhat obvious that pokemons with high Attack, Defense score has high Total score.
+
+### OPTIONAL: Did you create any models with your dataset? Discuss the strengths and limitations of your model.
+
+I made linear regression model. From the model i observed that HP ~ Speed has P-value lower than 0.001 so it`s important factor.
+
+Also Generation 3, Generation 5, Posion type has P-value lower than 0.05.
+
+But Poison type has minus t-value.
+
+So i reccomend to choose pokemon with generation 3 or 5 and avoid Poison type pokemon. if you want to be a pokemon trainer. 
+
+
+------
+
+# Final Plots and Summary
+
+### Plot One
+
+```{r Plot_One}
+ggplot(data=subset(poke,Type=='Type.1'),
+       aes(x=Type_value))+
+  geom_bar(stat='count')
+```
+
+### Description One
+
+I choose this plot in unvariate plot. Because, To start Pokemon, choosing type is important. It decide the direction of pokemon trainer. So getting information about types of pokemon is essential. Some types are strong and some are weak. But trainer should think about the relation between types. From this plot some types are common like water, normal, grass, and others like flying, fairy are rare. From information like this, trainer should decide which type he will collect next.
+
+### Plot Two
+
+```{r Plot_Two}
+pokebytype <- poke %>%
+  group_by(Type_value, Generation) %>%
+  summarise(total_mean = mean (Total))
+
+ggplot(data=pokebytype,aes(x=Type_value,y=total_mean))+
+  geom_bar(position = 'dodge', stat='identity', aes(fill = Generation))+
+  coord_cartesian(ylim = c(0,700))+
+  scale_fill_brewer(type='seq', palette =8 ) +
+  xlab('Generation in each Type')+
+  ylab('Mean of Total score')+
+  ggtitle('Mean of Total score in each type in each generation')
+```
+
+### Description Two
+
+This plot shows mean of Total by Type and which generation they are. This will help newbie trainers who is choosing his techtree and wants to have strong pokemon as fast as he can.
+I can observe 1st generation's total mean of dragon is highest and some generation show higher total mean than other generations..
+The trainer should choose his type which he likes but i reccomend to avoid bug, normal and poison. If he wants to play fast, he should see this plot to find which type in which generation has stong pokemon. and if he collect and train pokemons enough, they should try to get dragons.
+
+### Plot Three
+
+```{r}
+ggplot(data=poke, aes(x=Attack, y=Defense))+
+  geom_point(aes(color = Total), size = 5)+
+  ylim(0,quantile(poke$Defense,0.95))+
+  xlim(0,quantile(poke$Attack,0.95))+
+  geom_smooth(method='lm') +
+  scale_color_gradient(low = 2, high = 5)+
+  xlab('Attack') +
+  ylab('Defense') +
+  ggtitle('Attack vs Defense vs Total')
+```
+
+
+### Description Three
+
+the tratiners may be suspicious that how Attack and Defense is related on Total score.
+To them, I recommend to check this.
+The plot shows left-down side points are dark and right-up side points are brighter.
+so I can say high attack, defense pokemons has high total.
+
+------
+
+# Reflection
+
+nowadays I'm interested in pokemon as i playing pokemongo.
+When i was a child there was Pokemon season 1 and there were not so many pokemons, but now there are thounds of pokemons which makes pokemon harder. Because of this need of pokemon data anlaysis arises.
+This project is for pokemon trainers who is playing with gameboy or pokemongo.
+Because I made this project focused on how to collect strong pokemons. Like pokemon guide.
+It looks Pokemon director made it pretty balanced.
+Dragons are strong and Bugs are weak which is make sense.
+and others are well balanced.
+What i observed from Legendary is 1st Generation Legendary pokemon is much more strong than other legendary pokemon. Maybe pokemon director made mistake about legendary pokemon at first. They made legendary so strong so that it ruins the balance. From 2nd Generation Total of lengendary decrease a lot, except 3rd generation.
+The limitation of this dataset is there`s no Type features like fire type is powerful to grass type.
+Two interesting thing is odd number of generation pokemons are usually stronger than even number of Generation. Also about 50 pokemons are more appeared in odd number of generation.
+
+With this project I experienced how important to collect data in tidy set. If just one data is wrong, it doesn't work at all.
+I agree with 'Data Science is 80% of data wrangling and 20% of research'.
+During the research I've wanted to use linear regression. As I have a little knowledge about linear regression, I applied it simply.
+
+Future Work
+There will be pokemon generation 7 or new generation I guess, with this analysis trainer can research about new pokemons like guessing the total with new pokemon data that it gets.
