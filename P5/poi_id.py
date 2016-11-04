@@ -5,6 +5,7 @@ import pickle
 sys.path.append("../tools/")
 import matplotlib.pyplot
 from feature_format import featureFormat, targetFeatureSplit
+from tester import test_classifier
 from tester import dump_classifier_and_data
 from sklearn.pipeline import Pipeline
 ### Task 1: Select what features you'll use.
@@ -30,7 +31,7 @@ features= ['poi','salary','bonus','long_term_incentive','total_payments','total_
 
 
 data = featureFormat(data_dict, features)
-
+'''
 for point in data:
     salary = point[1]
     bonus = point[2]
@@ -43,7 +44,7 @@ matplotlib.pyplot.show()
 for i in data_dict:
     if data_dict[i]['salary'] != 'NaN' and data_dict[i]['salary'] > 25000000:
         print i
-      
+      '''
 #the outlier is 'TOTAL' and this is not a person, so i don't need it.
 
 #Deleting outlier 
@@ -53,6 +54,7 @@ data_dict.pop('TOTAL')
 
 data = featureFormat(data_dict, features)
 
+'''
 for point in data:
     salary = point[1]
     bonus = point[2]
@@ -91,6 +93,7 @@ for i in data_dict:
     if data_dict[i]['loan_advances'] != 'NaN' and data_dict[i]['loan_advances'] > 7000000:
         print i
 #Again the outlier is LAY KENNETH L
+'''
 
 ### Task 3: Create new feature(s)
 ### Store to my_dataset for easy export below.
@@ -100,14 +103,13 @@ for i in my_dataset:
     my_dataset[i]['from_this_person_to_poi'] != 'NaN' and\
     my_dataset[i]['to_messages'] != 'NaN' and\
     my_dataset[i]['from_messages'] != 'NaN':
-        my_dataset[i]['ratio_from_poi_to_entire_email'] = (my_dataset[i]['from_poi_to_this_person']+my_dataset[i]['from_this_person_to_poi'])/float((my_dataset[i]['from_messages']+my_dataset[i]['to_messages']))
+        my_dataset[i]['percentage_from_poi_to_entire_email'] = (my_dataset[i]['from_poi_to_this_person']+my_dataset[i]['from_this_person_to_poi'])/float((my_dataset[i]['from_messages']+my_dataset[i]['to_messages']))*100
     else:
-        my_dataset[i]['ratio_from_poi_to_entire_email'] = 0
+        my_dataset[i]['percentage_from_poi_to_entire_email'] = 0
 
 ### Extract features and labels from dataset for local testing
 data = featureFormat(my_dataset, features_list, sort_keys = True)
 labels, features = targetFeatureSplit(data)
-
 
 ### Task 4: Try a varity of classifiers
 ### Please name your classifier clf for easy export below.
@@ -126,7 +128,7 @@ from sklearn.svm import SVC
 from sklearn.metrics import precision_score
 from sklearn.metrics import recall_score
 from sklearn.metrics import f1_score
-
+'''
 #GaussianNB
 clf = GaussianNB()
 clf.fit(features,labels)
@@ -151,16 +153,8 @@ clf.fit(features,labels)
 pred = clf.predict(features)
 test_classifier(clf, data_dict, features_list)
 
-#KMeans
 
-clf = KMeans(n_clusters = 2)
-clf.fit(features,labels)
-pred = clf.predict(features)
-test_classifier(clf, data_dict, features_list)
-
-
-# AdaBoost shows highest f1score
-
+'''
 
 
 ### Task 5: Tune your classifier to achieve better than .3 precision and recall 
@@ -198,27 +192,23 @@ for sss_train, sss_test in sss:
 
 
 #Tuning classifier
-
-clf = AdaBoostClassifier()
-clf.fit(features_train,labels_train)
-pred = clf.predict(features)
-test_classifier(clf, data_dict, features_list)
-
 from sklearn.feature_selection import SelectKBest
-from sklearn.preprocessing import MinMaxScaler
+
 
 kbest = SelectKBest()
 scaler = MinMaxScaler()
 ada = AdaBoostClassifier()
+nb = GaussianNB()
 cv =StratifiedShuffleSplit(labels_train, 90,test_size = 0.3,random_state=50)
 pca = PCA()
 
-parameters = {'kbest__k':[15,16,17,18,19,20],'scaler__copy':[True, False]}
+parameters = {'kbest__k':[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20],'scaler__copy':[True, False]}
 pipe = Pipeline([('scaler',scaler),('kbest',kbest),('ada',ada)])
 grid_search = GridSearchCV(pipe,parameters, cv=cv, scoring = 'f1')
 clf =grid_search.fit(features_train,labels_train)
 clf = grid_search.best_estimator_
 test_classifier(clf, data_dict, features_list)
+
 
 
 
